@@ -10,3 +10,5 @@ Curve, a web platform designed to help users solve Data Structures and Algorithm
 - CI/CD : Wrote some yaml files to build the Dockerfile and contanirize it host it on Amazon EC2 instace(e.g linux arm64) 
 - Technologies Used: Node.js, Express.js, MongoDB, JWT, RESTful APIs, OTP authentication, Algorithmic backend logic, Automated test execution, Github Actions, Docker, AWS (EC2).
 
+# contribution
+There were 2 seperate branches for client and server fork and try to contribute on those two seperate branches
