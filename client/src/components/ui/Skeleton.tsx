@@ -1,78 +1,73 @@
 import React from "react";
 import { cn } from "../../lib/utils";
 
-/* ─────────────────────────────────────────────
-   Base Skeleton
-───────────────────────────────────────────── */
+/* ------------------------------------------------------------------ */
+/*  Base Skeleton                                                       */
+/* ------------------------------------------------------------------ */
+
 export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Shape variant */
-  variant?: "rectangular" | "circular" | "text";
-  /** Explicit width (defaults to 100%) */
-  width?: string | number;
-  /** Explicit height */
-  height?: string | number;
+  /** Explicit width (Tailwind class or inline style via `style` prop) */
+  width?: string;
+  /** Explicit height (Tailwind class or inline style via `style` prop) */
+  height?: string;
+  /** Round the skeleton into a circle (for avatars) */
+  circle?: boolean;
 }
 
 export function Skeleton({
-  variant = "rectangular",
   width,
   height,
+  circle = false,
   className,
   style,
-  ...rest
+  ...props
 }: SkeletonProps) {
   return (
     <div
       aria-hidden="true"
       className={cn(
         "animate-pulse bg-gray-200",
-        variant === "circular" && "rounded-full",
-        variant === "text" && "rounded",
-        variant === "rectangular" && "rounded-md",
+        circle ? "rounded-full" : "rounded",
         className
       )}
       style={{
-        width: width ?? "100%",
-        height:
-          height ?? (variant === "text" ? "1em" : undefined),
+        width,
+        height,
         ...style,
       }}
-      {...rest}
+      {...props}
     />
   );
 }
 
-/* ─────────────────────────────────────────────
-   Preset: Text block
-───────────────────────────────────────────── */
+/* ------------------------------------------------------------------ */
+/*  Text preset — simulates a block of text lines                      */
+/* ------------------------------------------------------------------ */
+
 export interface SkeletonTextProps {
-  /** Number of lines to render */
   lines?: number;
   className?: string;
 }
 
 export function SkeletonText({ lines = 3, className }: SkeletonTextProps) {
   return (
-    <div
-      aria-hidden="true"
-      className={cn("flex flex-col gap-2", className)}
-    >
+    <div className={cn("flex flex-col gap-2", className)} aria-hidden="true">
       {Array.from({ length: lines }).map((_, i) => (
         <Skeleton
           key={i}
-          variant="text"
-          // Last line is shorter for a more natural look
+          height="1rem"
+          // Make the last line shorter for a natural look
           width={i === lines - 1 ? "66%" : "100%"}
-          height="0.875rem"
         />
       ))}
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────
-   Preset: Card
-───────────────────────────────────────────── */
+/* ------------------------------------------------------------------ */
+/*  Card preset — simulates a card with image + text                   */
+/* ------------------------------------------------------------------ */
+
 export interface SkeletonCardProps {
   className?: string;
 }
@@ -80,19 +75,15 @@ export interface SkeletonCardProps {
 export function SkeletonCard({ className }: SkeletonCardProps) {
   return (
     <div
+      className={cn("rounded-lg border border-gray-200 p-4", className)}
       aria-hidden="true"
-      className={cn(
-        "rounded-xl border border-gray-100 bg-white p-4 shadow-sm",
-        "flex flex-col gap-4",
-        className
-      )}
     >
-      {/* Image / media area */}
-      <Skeleton variant="rectangular" height={160} />
+      {/* Image placeholder */}
+      <Skeleton height="10rem" className="mb-4 w-full" />
       {/* Title */}
-      <Skeleton variant="text" width="50%" height="1.125rem" />
-      {/* Body text */}
-      <SkeletonText lines={3} />
+      <Skeleton height="1.25rem" width="60%" className="mb-2" />
+      {/* Body lines */}
+      <SkeletonText lines={2} />
     </div>
   );
 }
