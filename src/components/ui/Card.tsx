@@ -1,89 +1,51 @@
 import React from "react";
-import { cn } from "../../lib/utils";
 
-// ---------------------------------------------------------------------------
-// Card
-// ---------------------------------------------------------------------------
-
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Remove default padding */
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+  /** Adds a subtle hover lift effect */
+  hoverable?: boolean;
+  /** Removes inner padding */
   noPadding?: boolean;
-}
-
-export function Card({ noPadding = false, className, children, ...rest }: CardProps) {
-  return (
-    <div
-      className={cn(
-        "rounded-2xl border border-gray-200 bg-white shadow-sm",
-        !noPadding && "p-6",
-        className
-      )}
-      {...rest}
-    >
-      {children}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// CardHeader
-// ---------------------------------------------------------------------------
-
-export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
-  title: React.ReactNode;
-  subtitle?: React.ReactNode;
+  /** Optional card header title */
+  title?: React.ReactNode;
+  /** Optional action placed in the header's trailing slot */
   action?: React.ReactNode;
 }
 
-export function CardHeader({ title, subtitle, action, className, ...rest }: CardHeaderProps) {
+export const Card: React.FC<CardProps> = ({
+  children,
+  className = "",
+  hoverable = false,
+  noPadding = false,
+  title,
+  action,
+}) => {
   return (
     <div
-      className={cn("flex items-start justify-between gap-4", className)}
-      {...rest}
+      className={[
+        "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm",
+        hoverable
+          ? "transition-shadow duration-200 hover:shadow-md hover:-translate-y-px"
+          : "",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
-      <div className="min-w-0">
-        <h3 className="truncate text-base font-semibold text-gray-900">
-          {title}
-        </h3>
-        {subtitle && (
-          <p className="mt-0.5 truncate text-sm text-gray-500">{subtitle}</p>
-        )}
-      </div>
-      {action && <div className="shrink-0">{action}</div>}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// CardBody
-// ---------------------------------------------------------------------------
-
-export interface CardBodyProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export function CardBody({ className, children, ...rest }: CardBodyProps) {
-  return (
-    <div className={cn("mt-4", className)} {...rest}>
-      {children}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// CardFooter
-// ---------------------------------------------------------------------------
-
-export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export function CardFooter({ className, children, ...rest }: CardFooterProps) {
-  return (
-    <div
-      className={cn(
-        "mt-4 flex items-center justify-end gap-3 border-t border-gray-100 pt-4",
-        className
+      {(title || action) && (
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+          {title && (
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+              {title}
+            </h3>
+          )}
+          {action && <div className="ml-auto">{action}</div>}
+        </div>
       )}
-      {...rest}
-    >
-      {children}
+      <div className={noPadding ? "" : "p-5"}>{children}</div>
     </div>
   );
-}
+};
+
+export default Card;
