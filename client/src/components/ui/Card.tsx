@@ -1,96 +1,78 @@
 import React from "react";
 import { cn } from "../../lib/utils";
 
-/* ─────────────────────────────────────────────
-   Card container
-───────────────────────────────────────────── */
+/* ------------------------------------------------------------------ */
+/*  Card                                                                */
+/* ------------------------------------------------------------------ */
+
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Remove the default box-shadow */
-  flat?: boolean;
-  /** Remove the default border */
-  borderless?: boolean;
+  /** Remove default padding */
+  noPadding?: boolean;
 }
 
-export function Card({
-  flat = false,
-  borderless = false,
-  className,
-  children,
-  ...rest
-}: CardProps) {
+export function Card({ noPadding = false, className, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "rounded-xl bg-white",
-        !borderless && "border border-gray-200",
-        !flat && "shadow-sm",
+        "rounded-lg border border-gray-200 bg-white shadow-sm",
+        !noPadding && "p-4",
         className
       )}
-      {...rest}
+      {...props}
     >
       {children}
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────
-   Card.Header
-───────────────────────────────────────────── */
-export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Optional action element aligned to the right */
-  action?: React.ReactNode;
-}
+/* ------------------------------------------------------------------ */
+/*  Card.Header                                                         */
+/* ------------------------------------------------------------------ */
 
-export function CardHeader({
-  action,
-  className,
-  children,
-  ...rest
-}: CardHeaderProps) {
+export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function CardHeader({ className, children, ...props }: CardHeaderProps) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between px-6 py-4 border-b border-gray-200",
+        "flex items-center justify-between border-b border-gray-100 px-4 py-3",
         className
       )}
-      {...rest}
+      {...props}
     >
-      <div className="flex-1">{children}</div>
-      {action && <div className="ml-4 shrink-0">{action}</div>}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────
-   Card.Body
-───────────────────────────────────────────── */
-export function CardBody({
-  className,
-  children,
-  ...rest
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div className={cn("px-6 py-4", className)} {...rest}>
       {children}
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────
-   Card.Footer
-───────────────────────────────────────────── */
-export function CardFooter({
-  className,
-  children,
-  ...rest
-}: React.HTMLAttributes<HTMLDivElement>) {
+/* ------------------------------------------------------------------ */
+/*  Card.Body                                                           */
+/* ------------------------------------------------------------------ */
+
+export interface CardBodyProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function CardBody({ className, children, ...props }: CardBodyProps) {
+  return (
+    <div className={cn("px-4 py-4", className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Card.Footer                                                         */
+/* ------------------------------------------------------------------ */
+
+export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function CardFooter({ className, children, ...props }: CardFooterProps) {
   return (
     <div
       className={cn(
-        "px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl",
+        "flex items-center border-t border-gray-100 px-4 py-3",
         className
       )}
-      {...rest}
+      {...props}
     >
       {children}
     </div>
