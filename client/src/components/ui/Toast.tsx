@@ -1,16 +1,18 @@
 import React from "react";
 import { cn } from "../../lib/utils";
 
-/* ─────────────────────────────────────────────
-   Types
-───────────────────────────────────────────── */
+/* ------------------------------------------------------------------ */
+/*  Types                                                               */
+/* ------------------------------------------------------------------ */
+
 export type ToastVariant = "info" | "success" | "warning" | "error";
 
 export interface Toast {
   id: string;
-  message: string;
+  title: string;
+  description?: string;
   variant?: ToastVariant;
-  duration?: number; // ms — 0 means persistent
+  duration?: number; // ms — 0 = persistent
 }
 
 interface ToastContextValue {
@@ -19,22 +21,22 @@ interface ToastContextValue {
   removeToast: (id: string) => void;
 }
 
-/* ─────────────────────────────────────────────
-   Context
-───────────────────────────────────────────── */
+/* ------------------------------------------------------------------ */
+/*  Context                                                             */
+/* ------------------------------------------------------------------ */
+
 const ToastContext = React.createContext<ToastContextValue | null>(null);
 
 export function useToast(): ToastContextValue {
   const ctx = React.useContext(ToastContext);
-  if (!ctx) {
-    throw new Error("useToast must be used within a <ToastProvider>");
-  }
+  if (!ctx) throw new Error("useToast must be used within <ToastProvider>");
   return ctx;
 }
 
-/* ─────────────────────────────────────────────
-   Provider
-───────────────────────────────────────────── */
+/* ------------------------------------------------------------------ */
+/*  Provider                                                            */
+/* ------------------------------------------------------------------ */
+
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<Toast[]>([]);
 
@@ -43,9 +45,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addToast = React.useCallback(
-    ({ message, variant = "info", duration = 4000 }: Omit<Toast, "id">) => {
-      const id = `${Date.now()}-${Math.random()}`;
-      setToasts((prev) => [...prev, { id, message, variant, duration }]);
+    (toast: Omit<Toast, "id">) => {
+      const id = Math.random().toString(36).slice(2);
+      const duration = toast.duration ?? 4000;
+      setToasts((prev) => [...prev, { ...toast, id }]);
       if (duration > 0) {
         setTimeout(() => removeToast(id), duration);
       }
@@ -61,19 +64,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ─────────────────────────────────────────────
-   Variant styles
-───────────────────────────────────────────── */
+/* ------------------------------------------------------------------ */
+/*  Viewport                                                            */
+/* ------------------------------------------------------------------ */
+
 const variantClasses: Record<ToastVariant, string> = {
-  info: "bg-blue-600 text-white",
-  success: "bg-green-600 text-white",
-  warning: "bg-yellow-500 text-gray-900",
-  error: "bg-red-600 text-white",
+  info: "border-blue-200 bg-blue-50 text-blue-900",
+  success: "border-green-200 bg-green-50 text-green-900",
+  warning: "border-yellow-200 bg-yellow-50 text-yellow-900",
+  error: "border-red-200 bg-red-50 text-red-900",
 };
 
-/* ─────────────────────────────────────────────
-   Viewport (renders toasts into the DOM)
-───────────────────────────────────────────── */
 function ToastViewport() {
   const { toasts, removeToast } = useToast();
 
@@ -82,59 +83,46 @@ function ToastViewport() {
   return (
     <div
       aria-live="polite"
-      aria-atomic="false"
-      className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-80"
+      aria-label="Notifications"
+      className="fixed bottom-4 right-4 z-50 flex flex-col gap-2"
     >
       {toasts.map((toast) => (
-        <ToastItem
+        <div
           key={toast.id}
-          toast={toast}
-          onDismiss={() => removeToast(toast.id)}
-        />
-      ))}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────
-   Individual toast item
-───────────────────────────────────────────── */
-function ToastItem({
-  toast,
-  onDismiss,
-}: {
-  toast: Toast;
-  onDismiss: () => void;
-}) {
-  return (
-    <div
-      role="status"
-      className={cn(
-        "flex items-start justify-between gap-3 rounded-md px-4 py-3 shadow-lg",
-        "animate-in fade-in slide-in-from-bottom-2 duration-200",
-        variantClasses[toast.variant ?? "info"]
-      )}
-    >
-      <span className="flex-1 text-sm">{toast.message}</span>
-      <button
-        type="button"
-        aria-label="Dismiss notification"
-        onClick={onDismiss}
-        className="shrink-0 opacity-80 hover:opacity-100 transition-opacity"
-      >
-        <svg
-          className="h-4 w-4"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
+          role="status"
+          className={cn(
+            "flex w-80 items-start gap-3 rounded-lg border p-4 shadow-md",
+            variantClasses[toast.variant ?? "info"]
+          )}
         >
-          <path
-            fillRule="evenodd"
-            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-            clipRule="evenodd"
-          />
-        </svg>
-      </button>
+          <div className="flex-1">
+            <p className="text-sm font-semibold">{toast.title}</p>
+            {toast.description && (
+              <p className="mt-0.5 text-xs opacity-80">{toast.description}</p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => removeToast(toast.id)}
+            aria-label="Dismiss notification"
+            className="shrink-0 rounded p-0.5 opacity-60 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+      ))}
     </div>
   );
 }
