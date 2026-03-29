@@ -1,118 +1,112 @@
 import React from "react";
-import { cn } from "../../lib/utils";
 
-export interface SelectOption<T extends string = string> {
-  value: T;
+export interface SelectOption {
+  value: string;
   label: string;
   disabled?: boolean;
 }
 
-export interface SelectProps<T extends string = string>
-  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size" | "value" | "onChange"> {
+interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "children"> {
+  options: SelectOption[];
   label?: string;
-  hint?: string;
   error?: string;
-  options: SelectOption<T>[];
-  value?: T;
-  onChange?: (value: T) => void;
+  hint?: string;
+  fullWidth?: boolean;
   placeholder?: string;
-  size?: "sm" | "md" | "lg";
 }
 
-const sizeClasses = {
-  sm: "h-8 px-3 text-sm",
-  md: "h-10 px-3.5 text-sm",
-  lg: "h-12 px-4 text-base",
-};
+export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+  (
+    {
+      options,
+      label,
+      error,
+      hint,
+      fullWidth = false,
+      placeholder,
+      className = "",
+      id,
+      ...rest
+    },
+    ref
+  ) => {
+    const selectId = id ?? (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
 
-export function Select<T extends string = string>({
-  label,
-  hint,
-  error,
-  options,
-  value,
-  onChange,
-  placeholder,
-  size = "md",
-  className,
-  id,
-  disabled,
-  ...rest
-}: SelectProps<T>) {
-  const inputId =
-    id ?? (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
-
-  return (
-    <div className="flex flex-col gap-1">
-      {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-gray-700">
-          {label}
-        </label>
-      )}
-
-      <div className="relative">
-        <select
-          id={inputId}
-          value={value ?? ""}
-          disabled={disabled}
-          onChange={(e) => onChange?.(e.target.value as T)}
-          aria-invalid={!!error}
-          aria-describedby={
-            error
-              ? `${inputId}-error`
-              : hint
-              ? `${inputId}-hint`
-              : undefined
-          }
-          className={cn(
-            "w-full appearance-none rounded-lg border bg-white pr-8 text-gray-900",
-            "transition-colors duration-150",
-            "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
-            "disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400",
-            error
-              ? "border-red-400 focus:ring-red-400 focus:border-red-400"
-              : "border-gray-300",
-            sizeClasses[size],
-            className
-          )}
-          {...(rest as React.SelectHTMLAttributes<HTMLSelectElement>)}
-        >
-          {placeholder && (
-            <option value="" disabled>
-              {placeholder}
-            </option>
-          )}
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value} disabled={opt.disabled}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-
-        {/* Chevron icon */}
-        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-            aria-hidden="true"
+    return (
+      <div
+        className={["flex flex-col gap-1", fullWidth ? "w-full" : ""]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        {label && (
+          <label
+            htmlFor={selectId}
+            className="text-sm font-medium text-gray-700 dark:text-gray-300"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </span>
+            {label}
+          </label>
+        )}
+        <div className="relative">
+          <select
+            ref={ref}
+            id={selectId}
+            className={[
+              "w-full appearance-none rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm pr-8 pl-3 py-2 transition-colors duration-150",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+              error
+                ? "border-red-400 focus-visible:ring-red-400"
+                : "border-gray-300 dark:border-gray-600 hover:border-gray-400",
+              className,
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            aria-invalid={!!error}
+            aria-describedby={
+              error
+                ? `${selectId}-error`
+                : hint
+                ? `${selectId}-hint`
+                : undefined
+            }
+            {...rest}
+          >
+            {placeholder && (
+              <option value="" disabled>
+                {placeholder}
+              </option>
+            )}
+            {options.map((opt) => (
+              <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {/* Chevron icon */}
+          <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path
+                fillRule="evenodd"
+                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </span>
+        </div>
+        {error && (
+          <p id={`${selectId}-error`} className="text-xs text-red-500">
+            {error}
+          </p>
+        )}
+        {!error && hint && (
+          <p id={`${selectId}-hint`} className="text-xs text-gray-400">
+            {hint}
+          </p>
+        )}
       </div>
+    );
+  }
+);
 
-      {error ? (
-        <p id={`${inputId}-error`} className="text-xs text-red-500" role="alert">
-          {error}
-        </p>
-      ) : hint ? (
-        <p id={`${inputId}-hint`} className="text-xs text-gray-500">
-          {hint}
-        </p>
-      ) : null}
-    </div>
-  );
-}
+Select.displayName = "Select";
+
+export default Select;
